@@ -165,7 +165,7 @@ def create_raft(model_name='middlebury'):
     elif model_name == 'middlebury':
         checkpoint = "/home/hongsuk/projects//RAFT-Stereo/models/raftstereo-middlebury.pth"
     else:
-        raise ValueError("Not supported model"
+        raise ValueError("Not supported model")
     
     args = RAFTConfig()
     model = torch.nn.DataParallel(RAFTStereo(args), device_ids=[0])
