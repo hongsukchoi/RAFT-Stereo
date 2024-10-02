@@ -159,24 +159,24 @@ class RAFTConfig:
     n_gru_layers: int = 3
 
 def create_raft(model_name='middlebury'):
-    # Modify the restore_ckpt based on model_name
-    if model_name == 'eth3d':
-        checkpoint = "/home/hongsuk/projects/RAFT-Stereo/models/raftstereo-eth3d.pth"
-    elif model_name == 'middlebury':
-        checkpoint = "/home/hongsuk/projects//RAFT-Stereo/models/raftstereo-middlebury.pth"
-    else:
-        raise ValueError("Not supported model")
+        # Modify the restore_ckpt based on model_name
+        if model_name == 'eth3d':
+            checkpoint = "/home/hongsuk/projects/RAFT-Stereo/models/raftstereo-eth3d.pth"
+        elif model_name == 'middlebury':
+            checkpoint = "/home/hongsuk/projects//RAFT-Stereo/models/raftstereo-middlebury.pth"
+        else:
+            raise ValueError("Not supported model")
+        
+        args = RAFTConfig(restore_ckpt=checkpoint)
+        model = torch.nn.DataParallel(RAFTStereo(args), device_ids=[0])
+        model.load_state_dict(torch.load(args.restore_ckpt))
     
-    args = RAFTConfig()
-    model = torch.nn.DataParallel(RAFTStereo(args), device_ids=[0])
-    model.load_state_dict(torch.load(args.restore_ckpt))
+        model = model.module
+        model = model.to('cuda')
+        model = model.eval()
+        return model
 
-    model = model.module
-    model = model.to('cuda')
-    model = model.eval()
-    return model
-
-@torch.no_grad
+@torch.no_grad()
 def raft_inference(left: torch.Tensor, right:torch.Tensor, model, iters = 32):
     assert left.shape == right.shape
     assert left.shape[0] == 3
