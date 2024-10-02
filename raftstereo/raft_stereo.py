@@ -146,7 +146,7 @@ from typing import List
 
 @dataclass
 class RAFTConfig:
-    restore_ckpt: str = "/home/justin/RAFT-Stereo/models/raftstereo-middlebury.pth"
+    restore_ckpt: str = "/home/hongsuk/projects//RAFT-Stereo/models/raftstereo-middlebury.pth"
     hidden_dims: List[int] = field(default_factory=lambda: [128]*3)
     corr_implementation: str = "reg"
     shared_backbone: bool = False
@@ -158,15 +158,23 @@ class RAFTConfig:
     mixed_precision: bool = False
     n_gru_layers: int = 3
 
-def create_raft():
-        args = RAFTConfig()
-        model = torch.nn.DataParallel(RAFTStereo(args), device_ids=[0])
-        model.load_state_dict(torch.load(args.restore_ckpt))
+def create_raft(model_name='middlebury'):
+    # Modify the restore_ckpt based on model_name
+    if model_name == 'eth3d':
+        checkpoint = "/home/hongsuk/projects/RAFT-Stereo/models/raftstereo-eth3d.pth"
+    elif model_name == 'middlebury':
+        checkpoint = "/home/hongsuk/projects//RAFT-Stereo/models/raftstereo-middlebury.pth"
+    else:
+        raise ValueError("Not supported model"
+    
+    args = RAFTConfig()
+    model = torch.nn.DataParallel(RAFTStereo(args), device_ids=[0])
+    model.load_state_dict(torch.load(args.restore_ckpt))
 
-        model = model.module
-        model = model.to('cuda')
-        model = model.eval()
-        return model
+    model = model.module
+    model = model.to('cuda')
+    model = model.eval()
+    return model
 
 @torch.no_grad
 def raft_inference(left: torch.Tensor, right:torch.Tensor, model, iters = 32):
